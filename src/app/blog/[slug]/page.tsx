@@ -277,22 +277,21 @@ export default function BlogPostPage() {
               ))}
             </div>
 
-            {/* Title - Fixed emoji rendering */}
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              {post.title.split(/(\p{Emoji})/gu).map((part, index) => {
-                // If this part is an emoji, render normally
-                if (/\p{Emoji}/gu.test(part)) {
-                  return <span key={index}>{part}</span>;
-                }
-                // If this part is text, apply gradient
-                return part ? (
-                  <span key={index} className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
-                    {part}
-                  </span>
-                ) : null;
-              })}
-            </h1>
-
+            {/* Title - Fixed emoji rendering with TypeScript types */}
+             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                  {post.title.split(/(\p{Emoji})/gu).map((part: string, index: number) => {
+                    // If this part is an emoji, render normally
+                    if (/\p{Emoji}/gu.test(part)) {
+                      return <span key={index}>{part}</span>;
+                    }
+                    // If this part is text, apply gradient
+                    return part ? (
+                      <span key={index} className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+                        {part}
+                      </span>
+                    ) : null;
+                  })}
+                </h1>
             {/* Meta Info */}
             <div className="flex items-center gap-4 text-gray-400 mb-8">
               <div className="flex items-center gap-2">

@@ -12,22 +12,6 @@ interface PreviewComponentProps {
 }
 
 export default function PreviewComponent({ title, tags, content, imagePreview }: PreviewComponentProps) {
-  // Function to render title with emojis properly
-  const renderTitleWithEmojis = (titleText: string) => {
-    return titleText.split(/(\p{Emoji})/gu).map((part, index) => {
-      // If this part is an emoji, render normally
-      if (/\p{Emoji}/gu.test(part)) {
-        return <span key={index}>{part}</span>;
-      }
-      // If this part is text, apply gradient
-      return part ? (
-        <span key={index} className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-          {part}
-        </span>
-      ) : null;
-    });
-  };
-
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
       <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
@@ -38,8 +22,19 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
         {title || content ? (
           <article className="prose prose-invert max-w-none">
             {title && (
-              <h1 className="text-2xl font-bold mb-4">
-                {renderTitleWithEmojis(title)}
+              <h1 className="text-2xl font-bold mb-4 leading-tight">
+                {title.split(/(\p{Emoji})/gu).map((part: string, index: number) => {
+                  // If this part is an emoji, render normally
+                  if (/\p{Emoji}/gu.test(part)) {
+                    return <span key={index}>{part}</span>;
+                  }
+                  // If this part is text, apply gradient
+                  return part ? (
+                    <span key={index} className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      {part}
+                    </span>
+                  ) : null;
+                })}
               </h1>
             )}
             {tags && (
