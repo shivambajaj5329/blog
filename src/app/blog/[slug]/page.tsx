@@ -6,10 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from 'remark-gfm'; // 👈 ADD THIS IMPORT
 import Newsletter from '@/components/Newsletter';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,7 +81,7 @@ export default function BlogPostPage() {
     }
   };
 
-  // CUSTOM MARKDOWN COMPONENTS WITH TABLE SUPPORT
+  // ENHANCED CUSTOM MARKDOWN COMPONENTS WITH PROPER TABLE SUPPORT
   const customComponents = {
     h1: ({ children }: any) => (
       <h1 className="text-3xl font-bold mt-8 mb-4 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
@@ -143,16 +143,16 @@ export default function BlogPostPage() {
         {children}
       </a>
     ),
-    // 🚀 TABLE COMPONENTS - NOW YOUR TABLES WILL RENDER BEAUTIFULLY!
+    // 🚀 ENHANCED TABLE COMPONENTS WITH BETTER STYLING
     table: ({ children }: any) => (
-      <div className="overflow-x-auto my-8">
-        <table className="w-full border-collapse bg-slate-900/50 rounded-lg overflow-hidden border border-white/10">
+      <div className="overflow-x-auto my-8 rounded-xl border border-white/20">
+        <table className="w-full border-collapse bg-slate-900/80 backdrop-blur-sm">
           {children}
         </table>
       </div>
     ),
     thead: ({ children }: any) => (
-      <thead className="bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+      <thead className="bg-gradient-to-r from-purple-600/30 to-pink-600/30">
         {children}
       </thead>
     ),
@@ -167,12 +167,12 @@ export default function BlogPostPage() {
       </tr>
     ),
     th: ({ children }: any) => (
-      <th className="px-4 py-3 text-left font-semibold text-white border-b border-white/20">
+      <th className="px-4 py-4 text-left font-semibold text-white border-b border-white/30">
         {children}
       </th>
     ),
     td: ({ children }: any) => (
-      <td className="px-4 py-3 text-gray-300 border-b border-white/5">
+      <td className="px-4 py-4 text-gray-300 border-b border-white/5">
         {children}
       </td>
     ),
@@ -277,9 +277,20 @@ export default function BlogPostPage() {
               ))}
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
-              {post.title}
+            {/* Title - Fixed emoji rendering */}
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+              {post.title.split(/(\p{Emoji})/gu).map((part, index) => {
+                // If this part is an emoji, render normally
+                if (/\p{Emoji}/gu.test(part)) {
+                  return <span key={index}>{part}</span>;
+                }
+                // If this part is text, apply gradient
+                return part ? (
+                  <span key={index} className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+                    {part}
+                  </span>
+                ) : null;
+              })}
             </h1>
 
             {/* Meta Info */}
@@ -318,10 +329,13 @@ export default function BlogPostPage() {
             )}
           </header>
 
-          {/* Article Body */}
+          {/* Article Body - 👈 UPDATED WITH GFM PLUGIN */}
           <div className="prose prose-lg prose-invert max-w-none">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-              <ReactMarkdown components={customComponents}>
+              <ReactMarkdown
+                components={customComponents}
+                remarkPlugins={[remarkGfm]} // 👈 ADD THIS LINE
+              >
                 {post.content}
               </ReactMarkdown>
             </div>
@@ -354,7 +368,6 @@ export default function BlogPostPage() {
             </div>
           </footer>
         </article>
-
 
         {/* Related Posts */}
         {relatedPosts.length > 0 && (

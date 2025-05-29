@@ -95,14 +95,6 @@ export default function BlogHome() {
         {/* Hero Section */}
         <section className="pt-32 pb-20 px-6">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Status badge */}
-            <div className="inline-flex items-center gap-3 mb-8 px-6 py-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
-              <div className="relative">
-                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping absolute"></div>
-                <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-              </div>
-              <span className="text-emerald-300 font-medium">Open to opportunities</span>
-            </div>
 
             {/* Main title - Updated */}
             <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
