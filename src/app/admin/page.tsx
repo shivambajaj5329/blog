@@ -26,21 +26,6 @@ const ENVIRONMENTS = {
   }
 };
 
-// Debug component - moved inside the main component
-const DebugEnvVars = () => {
-  return (
-    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-      <h3 className="text-red-200 font-bold mb-2">🔍 Environment Variables Debug</h3>
-      <div className="text-sm text-red-200 space-y-1">
-        <div><strong>DEV_URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_DEV_URL || 'MISSING'}</div>
-        <div><strong>PROD_URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_PROD_URL || 'MISSING'}</div>
-        <div><strong>DEV_KEY:</strong> {process.env.NEXT_PUBLIC_SUPABASE_DEV_ANON_KEY ? 'EXISTS' : 'MISSING'}</div>
-        <div><strong>PROD_KEY:</strong> {process.env.NEXT_PUBLIC_SUPABASE_PROD_ANON_KEY ? 'EXISTS' : 'MISSING'}</div>
-        <div><strong>URLs Match:</strong> {process.env.NEXT_PUBLIC_SUPABASE_DEV_URL === process.env.NEXT_PUBLIC_SUPABASE_PROD_URL ? '❌ YES (BAD!)' : '✅ NO (GOOD!)'}</div>
-      </div>
-    </div>
-  );
-};
 
 export default function AdminPageWrapper() {
   return (
@@ -197,10 +182,6 @@ function AdminPage() {
           </button>
         </div>
       </div>
-
-      {/* DEBUG COMPONENT - Add this temporarily */}
-      <DebugEnvVars />
-
       {/* Environment Status */}
       <div className="mb-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
         <div className="flex items-center gap-3">
