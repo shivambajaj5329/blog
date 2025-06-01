@@ -1,3 +1,4 @@
+// Updated home page with Contact component
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import Newsletter from '@/components/Newsletter';
+import Contact from '@/components/Contact'; // Import the new Contact component
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -168,100 +170,104 @@ export default function BlogHome() {
           </div>
         </section>
 
-{/* Posts Grid */}
-<section className="pb-20 px-6">
-  <div className="max-w-7xl mx-auto">
-    {loading ? (
-      <div className="flex justify-center items-center py-20">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+        {/* Posts Grid */}
+        <section className="pb-20 px-6">
+          <div className="max-w-7xl mx-auto">
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin"></div>
+                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                </div>
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-8xl mb-6">🕳️</div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-300">Nothing here yet</h3>
+                <p className="text-gray-400">No posts match your search or filter.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-8">
+                {filteredPosts.map((post, index) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    className="group block flex-shrink-0"
+                    style={{ width: 'calc(33.333% - 1.33rem)', minWidth: '320px', maxWidth: '400px' }}
+                  >
+                    <article className="h-[600px] bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col">
+                      {/* Image with overlay - Fixed height */}
+                      <div className="relative h-64 flex-shrink-0 overflow-hidden">
+                        {post.image_url ? (
+                          <Image
+                            src={post.image_url}
+                            alt={post.title}
+                            width={600}
+                            height={300}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
+                            <div className="text-6xl opacity-50">📝</div>
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                        {/* Date badge */}
+                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-sm text-white border border-white/20">
+                          {new Date(post.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Content area - Flexible height */}
+                      <div className="p-8 flex-1 flex flex-col">
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {post.tags.split(",").slice(0, 3).map((tag: string) => (
+                            <span
+                              key={tag}
+                              className="inline-block text-xs px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-200 rounded-full border border-purple-500/30"
+                            >
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Title - Fixed height */}
+                        <h2 className="text-xl font-bold mb-4 text-white group-hover:text-purple-200 transition-colors duration-300 leading-tight h-14 overflow-hidden">
+                          {post.title}
+                        </h2>
+
+                        {/* Excerpt - Flexible, takes remaining space */}
+                        <p className="text-gray-400 leading-relaxed mb-6 flex-1 text-sm">
+                          {post.content.replace(/[#*`]/g, '').slice(0, 120)}...
+                        </p>
+
+                        {/* Read more - Fixed at bottom */}
+                        <div className="flex items-center text-purple-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                          <span>Read article</span>
+                          <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Newsletter and Contact Sections with consistent sizing */}
+        <div className="max-w-6xl mx-auto px-4">
+          <Newsletter />
+          <Contact />
         </div>
-      </div>
-    ) : filteredPosts.length === 0 ? (
-      <div className="text-center py-20">
-        <div className="text-8xl mb-6">🕳️</div>
-        <h3 className="text-2xl font-bold mb-4 text-gray-300">Nothing here yet</h3>
-        <p className="text-gray-400">No posts match your search or filter.</p>
-      </div>
-    ) : (
-      <div className="flex flex-wrap justify-center gap-8">
-        {filteredPosts.map((post, index) => (
-          <Link
-            key={post.id}
-            href={`/blog/${post.slug}`}
-            className="group block flex-shrink-0"
-            style={{ width: 'calc(33.333% - 1.33rem)', minWidth: '320px', maxWidth: '400px' }}
-          >
-            <article className="h-[600px] bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col">
-              {/* Image with overlay - Fixed height */}
-              <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                {post.image_url ? (
-                  <Image
-                    src={post.image_url}
-                    alt={post.title}
-                    width={600}
-                    height={300}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
-                    <div className="text-6xl opacity-50">📝</div>
-                  </div>
-                )}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                {/* Date badge */}
-                <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-sm text-white border border-white/20">
-                  {new Date(post.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </div>
-              </div>
-
-              {/* Content area - Flexible height */}
-              <div className="p-8 flex-1 flex flex-col">
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {post.tags.split(",").slice(0, 3).map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="inline-block text-xs px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-purple-200 rounded-full border border-purple-500/30"
-                    >
-                      {tag.trim()}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Title - Fixed height */}
-                <h2 className="text-xl font-bold mb-4 text-white group-hover:text-purple-200 transition-colors duration-300 leading-tight h-14 overflow-hidden">
-                  {post.title}
-                </h2>
-
-                {/* Excerpt - Flexible, takes remaining space */}
-                <p className="text-gray-400 leading-relaxed mb-6 flex-1 text-sm">
-                  {post.content.replace(/[#*`]/g, '').slice(0, 120)}...
-                </p>
-
-                {/* Read more - Fixed at bottom */}
-                <div className="flex items-center text-purple-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  <span>Read article</span>
-                  <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-              </div>
-            </article>
-          </Link>
-        ))}
-      </div>
-    )}
-  </div>
-</section>
-
-            <Newsletter />
 
         <Footer />
       </div>

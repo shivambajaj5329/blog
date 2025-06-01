@@ -51,6 +51,20 @@ export default function Header({
     }
   };
 
+  // Smart contact navigation - scroll to contact section if it exists on current page
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      // Contact section exists on current page, scroll to it
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // No contact section on current page, go to homepage with contact anchor
+      window.location.href = '/#contact';
+    }
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled
@@ -94,16 +108,12 @@ export default function Header({
             >
               Resume
             </Link>
-            <Link
-              href="/contact"
-              className={`transition-colors duration-300 ${
-                pathname === '/contact'
-                  ? 'text-white font-medium'
-                  : 'text-gray-300 hover:text-white'
-              }`}
+            <button
+              onClick={handleContactClick}
+              className="transition-colors duration-300 text-gray-300 hover:text-white cursor-pointer"
             >
               Contact
-            </Link>
+            </button>
 
             {showSubscribeButton && (
               <>

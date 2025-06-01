@@ -8,6 +8,7 @@ interface Job {
   id: number;
   title: string;
   company: string;
+  location: string;
   date_range: string;
   description: string;
   technologies: string[];
@@ -125,22 +126,31 @@ export default function Jobs({ onLoadComplete }: JobsProps) {
               ? 'md:w-1/2 md:ml-auto md:pl-12'
               : 'md:w-1/2 md:pr-12'
             }`}>
-              <div className={`bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300 ${
-                !isRightSide ? 'md:text-right' : ''
-              }`}>
+              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300">
                 <div className="text-purple-400 font-semibold text-sm mb-2">
                   {job.date_range}
                 </div>
                 <h3 className="text-2xl font-bold mb-2 text-white">
                   {job.title}
                 </h3>
-                <div className="text-pink-400 font-semibold mb-4">
-                  {job.company}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="text-pink-400 font-semibold">
+                    {job.company}
+                  </div>
+                  {job.location && (
+                    <>
+                      <span className="text-gray-500">•</span>
+                      <div className="flex items-center gap-1 text-gray-400 text-sm">
+                        <span>📍</span>
+                        <span>{job.location}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <p className="text-gray-300 leading-relaxed mb-4">
                   {job.description}
                 </p>
-                <div className={`flex flex-wrap gap-2 ${!isRightSide ? 'md:justify-end' : ''}`}>
+                <div className="flex flex-wrap gap-2">
                   {job.technologies.map((tech, techIndex) => (
                     <span
                       key={techIndex}
