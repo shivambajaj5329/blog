@@ -1,8 +1,9 @@
-// Updated admin page with OpportunityStatusManager integration
+// Updated admin page with Newsletter Manager integration
 "use client";
 
 import { useState } from "react";
 import { SessionContextProvider, useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import NewsletterManager from '@/components/NewsletterManager';
 
 // Import your components
 import LoginComponent from "@/components/LoginComponent";
@@ -11,7 +12,7 @@ import PostEditor from "@/components/PostEditor";
 import PreviewComponent from "@/components/PreviewComponent";
 import PostsList from "@/components/PostsList";
 import JobsManager from "@/components/JobsManager";
-import OpportunityStatusManager from "@/components/OpportunityStatusManager"; // Import the new component
+import OpportunityStatusManager from "@/components/OpportunityStatusManager";
 import { blogSupabase as supabase } from "@/lib/supabase";
 
 // Environment configuration
@@ -56,7 +57,8 @@ function AdminPage() {
   const [showImageManager, setShowImageManager] = useState(false);
   const [showPostsList, setShowPostsList] = useState(false);
   const [showJobsManager, setShowJobsManager] = useState(false);
-  const [showOpportunityManager, setShowOpportunityManager] = useState(false); // Add state for OpportunityStatusManager
+  const [showOpportunityManager, setShowOpportunityManager] = useState(false);
+  const [showNewsletterManager, setShowNewsletterManager] = useState(false); // ✨ ADD THIS
 
   // Post editing states
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -172,6 +174,16 @@ function AdminPage() {
             📚 Posts
           </button>
 
+          {/* ✨ ADD NEWSLETTER BUTTON */}
+          <button
+            onClick={() => setShowNewsletterManager(!showNewsletterManager)}
+            className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+              showNewsletterManager ? "bg-pink-600/30 text-pink-200" : "bg-white/10 hover:bg-white/20"
+            }`}
+          >
+            📧 Newsletter
+          </button>
+
           <button
             onClick={() => setShowJobsManager(!showJobsManager)}
             className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
@@ -181,7 +193,6 @@ function AdminPage() {
             💼 Resume Jobs
           </button>
 
-          {/* New Opportunity Status Button */}
           <button
             onClick={() => setShowOpportunityManager(!showOpportunityManager)}
             className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
@@ -246,6 +257,16 @@ function AdminPage() {
         showMessage={showMessage}
       />
 
+      {/* ✨ ADD NEWSLETTER MANAGER COMPONENT */}
+      {showNewsletterManager && (
+        <div className="mb-8">
+          <NewsletterManager
+            currentEnv={currentEnv}
+            showMessage={showMessage}
+          />
+        </div>
+      )}
+
       {/* Jobs Manager Component */}
       <JobsManager
         showJobsManager={showJobsManager}
@@ -258,8 +279,8 @@ function AdminPage() {
         showMessage={showMessage}
       />
 
-      {/* Main Content Grid - Only show when not managing jobs or opportunities */}
-      {!showJobsManager && !showOpportunityManager && (
+      {/* ✨ UPDATE MAIN CONTENT CONDITION */}
+      {!showJobsManager && !showOpportunityManager && !showNewsletterManager && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Post Editor Component */}
           <div className="space-y-6">
@@ -285,7 +306,7 @@ function AdminPage() {
         </div>
       )}
 
-      {/* Footer */}
+      {/* ✨ UPDATE FOOTER */}
       <div className="mt-12 text-center text-gray-500 text-sm">
         <p>🚀 Powered by Next.js, Supabase & Tailwind CSS</p>
         <p className="mt-1">Environment: {ENVIRONMENTS[currentEnv].name}</p>
@@ -294,6 +315,9 @@ function AdminPage() {
         )}
         {showOpportunityManager && (
           <p className="mt-1 text-emerald-400">💼 Opportunity Status Management Mode</p>
+        )}
+        {showNewsletterManager && (
+          <p className="mt-1 text-pink-400">📧 Newsletter Management Mode</p>
         )}
       </div>
     </div>

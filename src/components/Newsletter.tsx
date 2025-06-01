@@ -1,7 +1,8 @@
-// components/Newsletter.tsx - Updated to match Contact component styling
+// components/Newsletter.tsx - Store subscribers in Supabase
 "use client";
 
 import { useState } from "react";
+import { blogSupabase } from "@/lib/supabase";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -14,22 +15,46 @@ export default function Newsletter() {
     setMessage("");
 
     try {
-      // TODO: Implement your subscription logic here
-      // This could be:
-      // - Supabase insert
-      // - API call to email service (ConvertKit, Mailchimp, etc.)
-      // - Your own API endpoint
+      // Check if email already exists
+      const { data: existingSubscriber, error: checkError } = await blogSupabase
+        .from("newsletter_subscribers")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .maybeSingle();
 
-      console.log("Subscribing email:", email);
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw new Error(checkError.message);
+      }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (existingSubscriber) {
+        setMessage("📧 You're already subscribed! Thanks for your interest.");
+        setEmail("");
+        return;
+      }
+
+      // Add new subscriber
+      const { error: insertError } = await blogSupabase
+        .from("newsletter_subscribers")
+        .insert({
+          email: email.toLowerCase(),
+          subscribed_at: new Date().toISOString(),
+          is_active: true,
+          source: 'website'
+        });
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
 
       // Success
-      setMessage("🎉 Thanks for subscribing! Check your email to confirm.");
+      setMessage("🎉 Thanks for subscribing! You'll get notified about new posts.");
       setEmail("");
 
+      // Optional: Track subscription event
+      console.log("New newsletter subscriber:", email);
+
     } catch (error) {
+      console.error("Newsletter subscription error:", error);
       setMessage("❌ Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
@@ -42,7 +67,7 @@ export default function Newsletter() {
         Stay in the Loop
       </h2>
       <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-        Get the latest insights delivered straight to your inbox. No spam, just pure value.
+        Get notified when I publish new posts. No spam, just quality content delivered to your inbox.
       </p>
 
       <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row max-w-md mx-auto gap-4 mb-4">
@@ -69,6 +94,10 @@ export default function Newsletter() {
           {message}
         </p>
       )}
+
+      <p className="text-xs text-gray-500 mt-4">
+        ✨ Join {/* TODO: Add subscriber count */} other readers
+      </p>
     </section>
   );
 }
