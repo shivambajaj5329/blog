@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { generateNewsletterTemplate } from '@/lib/email-template';
 
-// Initialize Resend (you'll need to install: npm install resend)
+// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Your domain for the newsletter
@@ -76,15 +76,21 @@ export async function POST(request: NextRequest) {
         return { email, status: 'sent', id: result.data?.id };
       } catch (error) {
         console.error(`Failed to send to ${email}:`, error);
-        return { email, status: 'failed', error: error.message };
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { email, status: 'failed', error: errorMessage };
       }
     });
 
     // Send all emails
     const results = await Promise.allSettled(emailPromises);
 
-    const successful = results.filter(r => r.status === 'fulfilled' && r.value.status === 'sent').length;
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'failed')).length;
+    const successful = results.filter(r =>
+      r.status === 'fulfilled' && r.value.status === 'sent'
+    ).length;
+
+    const failed = results.filter(r =>
+      r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'failed')
+    ).length;
 
     console.log(`✅ Newsletter sending complete: ${successful} sent, ${failed} failed`);
 
@@ -93,13 +99,16 @@ export async function POST(request: NextRequest) {
       sent: successful,
       failed: failed,
       total: subscribers.length,
-      details: results.map(r => r.status === 'fulfilled' ? r.value : { status: 'failed', error: 'Promise rejected' })
+      details: results.map(r =>
+        r.status === 'fulfilled' ? r.value : { status: 'failed', error: 'Promise rejected' }
+      )
     });
 
   } catch (error) {
     console.error('Newsletter API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: 'Failed to send newsletter' },
+      { error: `Failed to send newsletter: ${errorMessage}` },
       { status: 500 }
     );
   }
