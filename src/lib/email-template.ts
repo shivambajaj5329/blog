@@ -28,30 +28,33 @@ export function generateNewsletterTemplate({
   subscriberEmail
 }: EmailTemplateProps): { html: string; text: string } {
 
-  // Debug: Log the post object to see what fields we have
-  console.log("📧 Email template - Post object:", post);
-  console.log("📧 Email template - Available fields:", Object.keys(post));
+  // Safety check
+  if (!post) {
+    console.error("📧 Post object is null or undefined");
+    throw new Error("Post object is required");
+  }
 
-  // Try different possible content field names
-  const getContentFromPost = (post: BlogPost): string => {
-    // Try common field names for content
-    const possibleContentFields = ['content', 'body', 'text', 'description', 'excerpt'];
+  console.log("📧 Generating template for post:", post.title);
+  console.log("📧 Available fields:", Object.keys(post));
 
-    for (const field of possibleContentFields) {
-      const value = post[field as keyof BlogPost];
-      if (value && typeof value === 'string' && value.trim().length > 0) {
-        console.log(`📧 Using content from field: ${field}`);
+  // Try to find content from various possible field names
+  const getContent = (): string => {
+    const fields = ['content', 'body', 'text', 'description', 'excerpt'];
+
+    for (const field of fields) {
+      const value = (post as any)[field];
+      if (value && typeof value === 'string' && value.trim()) {
+        console.log(`📧 Found content in field: ${field}`);
         return value;
       }
     }
 
-    // Fallback if no content found
     console.warn("📧 No content field found, using fallback");
-    return "Click to read this amazing post on the blog!";
+    return "Check out this great new post on the blog!";
   };
 
   // Extract content safely
-  const rawContent = getContentFromPost(post);
+  const rawContent = getContent();
 
   // Extract excerpt from content
   const excerpt = rawContent
