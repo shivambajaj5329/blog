@@ -274,7 +274,7 @@ export default function ResumePage() {
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Full-Stack Developer & Tech Enthusiast passionate about building innovative solutions that make a difference
+            Applied Data Science Backend Engineer & Tech Enthusiast passionate about building innovative solutions that make a difference
           </p>
 
           {/* Enhanced About Me Section */}
