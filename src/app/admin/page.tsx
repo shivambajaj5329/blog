@@ -1,4 +1,4 @@
-// Updated admin page with JobsManager integration
+// Updated admin page with OpportunityStatusManager integration
 "use client";
 
 import { useState } from "react";
@@ -11,7 +11,8 @@ import ImageManager from "@/components/ImageManager";
 import PostEditor from "@/components/PostEditor";
 import PreviewComponent from "@/components/PreviewComponent";
 import PostsList from "@/components/PostsList";
-import JobsManager from "@/components/JobsManager"; // Import the new JobsManager
+import JobsManager from "@/components/JobsManager";
+import OpportunityStatusManager from "@/components/OpportunityStatusManager"; // Import the new component
 
 const supabaseClient = createPagesBrowserClient();
 
@@ -56,7 +57,8 @@ function AdminPage() {
   const [currentEnv, setCurrentEnv] = useState<"dev" | "prod">("dev");
   const [showImageManager, setShowImageManager] = useState(false);
   const [showPostsList, setShowPostsList] = useState(false);
-  const [showJobsManager, setShowJobsManager] = useState(false); // Add state for JobsManager
+  const [showJobsManager, setShowJobsManager] = useState(false);
+  const [showOpportunityManager, setShowOpportunityManager] = useState(false); // Add state for OpportunityStatusManager
 
   // Post editing states
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -172,7 +174,6 @@ function AdminPage() {
             📚 Posts
           </button>
 
-          {/* New Jobs Manager Button */}
           <button
             onClick={() => setShowJobsManager(!showJobsManager)}
             className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
@@ -180,6 +181,16 @@ function AdminPage() {
             }`}
           >
             💼 Resume Jobs
+          </button>
+
+          {/* New Opportunity Status Button */}
+          <button
+            onClick={() => setShowOpportunityManager(!showOpportunityManager)}
+            className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+              showOpportunityManager ? "bg-emerald-600/30 text-emerald-200" : "bg-white/10 hover:bg-white/20"
+            }`}
+          >
+            💼 Job Status
           </button>
 
           <button
@@ -243,8 +254,14 @@ function AdminPage() {
         showMessage={showMessage}
       />
 
-      {/* Main Content Grid - Only show when not managing jobs */}
-      {!showJobsManager && (
+      {/* Opportunity Status Manager Component */}
+      <OpportunityStatusManager
+        showOpportunityManager={showOpportunityManager}
+        showMessage={showMessage}
+      />
+
+      {/* Main Content Grid - Only show when not managing jobs or opportunities */}
+      {!showJobsManager && !showOpportunityManager && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Post Editor Component */}
           <div className="space-y-6">
@@ -276,6 +293,9 @@ function AdminPage() {
         <p className="mt-1">Environment: {ENVIRONMENTS[currentEnv].name}</p>
         {showJobsManager && (
           <p className="mt-1 text-purple-400">💼 Resume Jobs Management Mode</p>
+        )}
+        {showOpportunityManager && (
+          <p className="mt-1 text-emerald-400">💼 Opportunity Status Management Mode</p>
         )}
       </div>
     </div>

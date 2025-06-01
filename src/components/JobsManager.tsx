@@ -8,6 +8,7 @@ interface Job {
   id?: number;
   title: string;
   company: string;
+  location: string;
   date_range: string;
   description: string;
   technologies: string[];
@@ -26,6 +27,7 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
   const [formData, setFormData] = useState<Job>({
     title: "",
     company: "",
+    location: "",
     date_range: "",
     description: "",
     technologies: [],
@@ -60,6 +62,7 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
     setFormData({
       title: "",
       company: "",
+      location: "",
       date_range: "",
       description: "",
       technologies: [],
@@ -87,6 +90,7 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
           .update({
             title: formData.title,
             company: formData.company,
+            location: formData.location,
             date_range: formData.date_range,
             description: formData.description,
             technologies: formData.technologies,
@@ -104,6 +108,7 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
           .insert([{
             title: formData.title,
             company: formData.company,
+            location: formData.location,
             date_range: formData.date_range,
             description: formData.description,
             technologies: formData.technologies,
@@ -129,6 +134,7 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
     setFormData({
       title: job.title,
       company: job.company,
+      location: job.location || "",
       date_range: job.date_range,
       description: job.description,
       technologies: [...job.technologies],
@@ -252,6 +258,19 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                placeholder="e.g., San Francisco, CA | Remote | New York, NY"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Date Range
               </label>
               <input
@@ -262,18 +281,18 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
                 placeholder="e.g., 2024 - Present"
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Order Index (higher = shows first)
-              </label>
-              <input
-                type="number"
-                value={formData.order_index}
-                onChange={(e) => setFormData(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Order Index (higher = shows first)
+            </label>
+            <input
+              type="number"
+              value={formData.order_index}
+              onChange={(e) => setFormData(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+              className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+            />
           </div>
 
           <div className="mb-4">
@@ -370,7 +389,18 @@ export default function JobsManager({ showJobsManager, showMessage }: JobsManage
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h4 className="text-lg font-semibold text-white">{job.title}</h4>
-                      <p className="text-purple-400">{job.company}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-purple-400">{job.company}</p>
+                        {job.location && (
+                          <>
+                            <span className="text-gray-500">•</span>
+                            <div className="flex items-center gap-1 text-gray-400 text-sm">
+                              <span>📍</span>
+                              <span>{job.location}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-400">{job.date_range}</p>
                     </div>
                     <div className="flex items-center gap-2">
