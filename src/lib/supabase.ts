@@ -7,14 +7,6 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL
 // Database configuration based on environment
 const getDatabaseConfig = () => {
   // 🐛 DEBUG: Let's see what's happening
-  console.log('🔍 Environment Debug:');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
-  console.log('isProduction:', isProduction);
-  console.log('DEV_URL:', process.env.NEXT_PUBLIC_SUPABASE_DEV_URL);
-  console.log('DEV_KEY:', process.env.NEXT_PUBLIC_SUPABASE_DEV_ANON_KEY ? 'SET' : 'NOT SET');
-  console.log('PROD_URL:', process.env.NEXT_PUBLIC_SUPABASE_PROD_URL);
-  console.log('PROD_KEY:', process.env.NEXT_PUBLIC_SUPABASE_PROD_ANON_KEY ? 'SET' : 'NOT SET');
 
   if (isProduction) {
     // Production database (blogdb_prod)

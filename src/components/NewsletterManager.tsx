@@ -44,6 +44,13 @@ export default function NewsletterManager({ currentEnv, showMessage }: Newslette
         .limit(10);
 
       if (postsError) throw postsError;
+
+      // Debug: Log the first post to see what fields we have
+      if (postsData && postsData.length > 0) {
+        console.log("First post fields:", Object.keys(postsData[0]));
+        console.log("First post data:", postsData[0]);
+      }
+
       setPosts(postsData || []);
 
       // Load newsletter subscribers (always from prod)
@@ -209,6 +216,10 @@ export default function NewsletterManager({ currentEnv, showMessage }: Newslette
     window.URL.revokeObjectURL(url);
   };
 
+  const closePreview = () => {
+    setPreviewPost(null);
+  };
+
   if (loading) {
     return (
       <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
@@ -344,7 +355,11 @@ export default function NewsletterManager({ currentEnv, showMessage }: Newslette
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setPreviewPost(post)}
+                    onClick={() => {
+                      console.log("🔍 Preview button clicked for post:", post);
+                      console.log("🔍 Post keys:", post ? Object.keys(post) : "Post is null/undefined");
+                      setPreviewPost(post);
+                    }}
                     className="px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg text-sm text-blue-200 transition-all duration-300"
                     title="Preview email"
                   >
@@ -392,6 +407,18 @@ export default function NewsletterManager({ currentEnv, showMessage }: Newslette
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Email Preview Modal with Debug Info */}
+      {previewPost && (
+        <div>
+
+
+          <EmailPreview
+            post={previewPost}
+            onClose={closePreview}
+          />
         </div>
       )}
     </div>

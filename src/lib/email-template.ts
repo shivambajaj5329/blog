@@ -2,7 +2,11 @@
 interface BlogPost {
   title: string;
   slug: string;
-  content: string;
+  content?: string;
+  body?: string;
+  text?: string;
+  description?: string;
+  excerpt?: string;
   image_url?: string;
   created_at: string;
   tags?: string;
@@ -24,8 +28,33 @@ export function generateNewsletterTemplate({
   subscriberEmail
 }: EmailTemplateProps): { html: string; text: string } {
 
+  // Debug: Log the post object to see what fields we have
+  console.log("📧 Email template - Post object:", post);
+  console.log("📧 Email template - Available fields:", Object.keys(post));
+
+  // Try different possible content field names
+  const getContentFromPost = (post: BlogPost): string => {
+    // Try common field names for content
+    const possibleContentFields = ['content', 'body', 'text', 'description', 'excerpt'];
+
+    for (const field of possibleContentFields) {
+      const value = post[field as keyof BlogPost];
+      if (value && typeof value === 'string' && value.trim().length > 0) {
+        console.log(`📧 Using content from field: ${field}`);
+        return value;
+      }
+    }
+
+    // Fallback if no content found
+    console.warn("📧 No content field found, using fallback");
+    return "Click to read this amazing post on the blog!";
+  };
+
+  // Extract content safely
+  const rawContent = getContentFromPost(post);
+
   // Extract excerpt from content
-  const excerpt = post.content
+  const excerpt = rawContent
     .replace(/[#*`\[\]]/g, '') // Remove markdown
     .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
     .slice(0, 180) + '...';

@@ -73,13 +73,6 @@ export default function PostsList({
       showMessage("❌ Post is already in production.", "error");
       return;
     }
-
-    // Debug logging
-    console.log('🔍 Environment Check:');
-    console.log('DEV_URL:', process.env.NEXT_PUBLIC_SUPABASE_DEV_URL);
-    console.log('PROD_URL:', process.env.NEXT_PUBLIC_SUPABASE_PROD_URL);
-    console.log('URLs are same:', process.env.NEXT_PUBLIC_SUPABASE_DEV_URL === process.env.NEXT_PUBLIC_SUPABASE_PROD_URL);
-
     const prodUrl = process.env.NEXT_PUBLIC_SUPABASE_PROD_URL;
     const prodKey = process.env.NEXT_PUBLIC_SUPABASE_PROD_ANON_KEY;
 
