@@ -1,4 +1,4 @@
-// pages/admin.tsx or components/AdminPage.tsx
+// Updated admin page with JobsManager integration
 "use client";
 
 import { useState } from "react";
@@ -11,6 +11,7 @@ import ImageManager from "@/components/ImageManager";
 import PostEditor from "@/components/PostEditor";
 import PreviewComponent from "@/components/PreviewComponent";
 import PostsList from "@/components/PostsList";
+import JobsManager from "@/components/JobsManager"; // Import the new JobsManager
 
 const supabaseClient = createPagesBrowserClient();
 
@@ -25,7 +26,6 @@ const ENVIRONMENTS = {
     url: "https://shivambajaj.com",
   }
 };
-
 
 export default function AdminPageWrapper() {
   return (
@@ -56,6 +56,7 @@ function AdminPage() {
   const [currentEnv, setCurrentEnv] = useState<"dev" | "prod">("dev");
   const [showImageManager, setShowImageManager] = useState(false);
   const [showPostsList, setShowPostsList] = useState(false);
+  const [showJobsManager, setShowJobsManager] = useState(false); // Add state for JobsManager
 
   // Post editing states
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -131,7 +132,7 @@ function AdminPage() {
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
             🛠️ Content Management System
           </h1>
-          <p className="text-gray-400">Create and manage your blog posts across environments</p>
+          <p className="text-gray-400">Create and manage your blog posts & resume across environments</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -152,6 +153,7 @@ function AdminPage() {
             ))}
           </div>
 
+          {/* Management Buttons */}
           <button
             onClick={() => setShowImageManager(!showImageManager)}
             className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
@@ -160,6 +162,7 @@ function AdminPage() {
           >
             🖼️ Images
           </button>
+
           <button
             onClick={() => setShowPostsList(!showPostsList)}
             className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
@@ -168,6 +171,17 @@ function AdminPage() {
           >
             📚 Posts
           </button>
+
+          {/* New Jobs Manager Button */}
+          <button
+            onClick={() => setShowJobsManager(!showJobsManager)}
+            className={`px-4 py-2 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+              showJobsManager ? "bg-purple-600/30 text-purple-200" : "bg-white/10 hover:bg-white/20"
+            }`}
+          >
+            💼 Resume Jobs
+          </button>
+
           <button
             onClick={() => window.open(ENVIRONMENTS[currentEnv].url, '_blank')}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105"
@@ -182,6 +196,7 @@ function AdminPage() {
           </button>
         </div>
       </div>
+
       {/* Environment Status */}
       <div className="mb-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
         <div className="flex items-center gap-3">
@@ -222,35 +237,46 @@ function AdminPage() {
         showMessage={showMessage}
       />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Post Editor Component */}
-        <div className="space-y-6">
-          <PostEditor
-            currentEnv={currentEnv}
-            environments={ENVIRONMENTS}
-            editingPost={editingPost}
-            onPostSaved={handlePostSaved}
-            onEditCancel={handleEditCancel}
-            showMessage={showMessage}
-          />
-        </div>
+      {/* Jobs Manager Component */}
+      <JobsManager
+        showJobsManager={showJobsManager}
+        showMessage={showMessage}
+      />
 
-        {/* Preview Component */}
-        <div className="space-y-6">
-          <PreviewComponent
-            title={postData.title}
-            tags={postData.tags}
-            content={postData.content}
-            imagePreview={postData.imagePreview}
-          />
+      {/* Main Content Grid - Only show when not managing jobs */}
+      {!showJobsManager && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Post Editor Component */}
+          <div className="space-y-6">
+            <PostEditor
+              currentEnv={currentEnv}
+              environments={ENVIRONMENTS}
+              editingPost={editingPost}
+              onPostSaved={handlePostSaved}
+              onEditCancel={handleEditCancel}
+              showMessage={showMessage}
+            />
+          </div>
+
+          {/* Preview Component */}
+          <div className="space-y-6">
+            <PreviewComponent
+              title={postData.title}
+              tags={postData.tags}
+              content={postData.content}
+              imagePreview={postData.imagePreview}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Footer */}
       <div className="mt-12 text-center text-gray-500 text-sm">
         <p>🚀 Powered by Next.js, Supabase & Tailwind CSS</p>
         <p className="mt-1">Environment: {ENVIRONMENTS[currentEnv].name}</p>
+        {showJobsManager && (
+          <p className="mt-1 text-purple-400">💼 Resume Jobs Management Mode</p>
+        )}
       </div>
     </div>
   );

@@ -1,13 +1,15 @@
+// Updated sections of your resume page
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
+import Jobs from '@/components/Jobs'; // Import the new Jobs component
 
 export default function ResumePage() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [jobsLoaded, setJobsLoaded] = useState(false);
 
   useEffect(() => {
     // Set loaded state immediately
@@ -21,6 +23,7 @@ export default function ResumePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Update loadAnimations to wait for jobs to load
   const loadAnimations = async () => {
     try {
       const { gsap } = await import("gsap");
@@ -28,7 +31,7 @@ export default function ResumePage() {
 
       gsap.registerPlugin(ScrollTrigger);
 
-      // Wait for elements to be in DOM
+      // Wait for elements to be in DOM and jobs to load
       await new Promise(resolve => setTimeout(resolve, 200));
 
       // Hero animation on load
@@ -38,23 +41,10 @@ export default function ResumePage() {
         .from('.hero p', { opacity: 0, y: 20, duration: 0.6 }, '-=0.5')
         .from('.hero-buttons', { opacity: 0, y: 20, duration: 0.6 }, '-=0.3');
 
-      // Animate timeline items
-      gsap.fromTo('.timeline-item', {
-        opacity: 0,
-        y: 50
-      }, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: '.timeline',
-          start: 'top 80%',
-          end: 'bottom 20%',
-          toggleActions: 'play none none reverse'
-        }
-      });
+      // Only animate timeline items after jobs are loaded
+      if (jobsLoaded) {
+        animateTimelineItems(gsap);
+      }
 
       // Animate skill bars
       ScrollTrigger.batch('.skill-progress', {
@@ -92,7 +82,46 @@ export default function ResumePage() {
     }
   };
 
-  // Smooth scrolling for anchor links
+  // Separate function to animate timeline items
+  const animateTimelineItems = async (gsap: any) => {
+    // Small delay to ensure timeline items are rendered
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Animate timeline items
+    gsap.fromTo('.timeline-item', {
+      opacity: 0,
+      y: 50
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.2,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: '.timeline',
+        start: 'top 80%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse'
+      }
+    });
+  };
+
+  // Handle when jobs finish loading
+  const handleJobsLoaded = async () => {
+    setJobsLoaded(true);
+
+    // If GSAP is already loaded, animate the timeline items
+    if (isLoaded) {
+      try {
+        const { gsap } = await import("gsap");
+        animateTimelineItems(gsap);
+      } catch (error) {
+        console.log('GSAP not available for timeline animation');
+      }
+    }
+  };
+
+  // Smooth scrolling for anchor links (unchanged)
   useEffect(() => {
     const handleAnchorClick = (e: Event) => {
       e.preventDefault();
@@ -120,7 +149,7 @@ export default function ResumePage() {
     };
   }, [isLoaded]);
 
-  // Show loading state briefly
+  // Show loading state briefly (unchanged)
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -136,12 +165,11 @@ export default function ResumePage() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Sleek Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
-                      {/* Use Header Component */}
-      <Header />
+        <Header />
       </nav>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4">
-        {/* Hero Section */}
+        {/* Hero Section - unchanged */}
         <section className="hero text-center pt-32 pb-16 mb-16">
           <div className="inline-flex items-center gap-3 mb-8 px-6 py-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hero-badge">
             <div className="relative">
@@ -188,115 +216,17 @@ export default function ResumePage() {
           </div>
         </section>
 
-        {/* Timeline Section */}
+        {/* Updated Timeline Section - Now Dynamic */}
         <section className="my-24">
           <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
             Professional Journey
           </h2>
 
-          <div className="timeline relative max-w-5xl mx-auto">
-            {/* Central timeline line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-purple-500 via-pink-500 to-blue-500 rounded-full hidden md:block"></div>
-
-            {/* Timeline Item 1 - RIGHT SIDE */}
-            <div className="timeline-item relative mb-16 opacity-0 transform translate-y-12">
-              <div className="absolute left-1/2 top-8 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full border-4 border-black z-10 shadow-lg shadow-purple-500/50 hidden md:block"></div>
-
-              {/* Desktop: Right side, Mobile: Full width */}
-              <div className="md:w-1/2 md:ml-auto md:pl-12">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-purple-400 font-semibold text-sm mb-2">2024 - Present</div>
-                  <h3 className="text-2xl font-bold mb-2 text-white">Senior Full-Stack Developer</h3>
-                  <div className="text-pink-400 font-semibold mb-4">TechCorp Solutions</div>
-                  <p className="text-gray-300 leading-relaxed mb-4">
-                    Leading development of scalable web applications using modern technologies.
-                    Mentoring junior developers and architecting cloud-native solutions that serve 100k+ users.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">React</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Node.js</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">AWS</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">TypeScript</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline Item 2 - LEFT SIDE */}
-            <div className="timeline-item relative mb-16 opacity-0 transform translate-y-12">
-              <div className="absolute left-1/2 top-8 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full border-4 border-black z-10 shadow-lg shadow-pink-500/50 hidden md:block"></div>
-
-              {/* Desktop: Left side, Mobile: Full width */}
-              <div className="md:w-1/2 md:pr-12">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300 md:text-right">
-                  <div className="text-purple-400 font-semibold text-sm mb-2">2022 - 2024</div>
-                  <h3 className="text-2xl font-bold mb-2 text-white">Full-Stack Developer</h3>
-                  <div className="text-pink-400 font-semibold mb-4">StartupXYZ</div>
-                  <p className="text-gray-300 leading-relaxed mb-4">
-                    Built and maintained multiple client projects from concept to deployment.
-                    Implemented CI/CD pipelines and optimized application performance by 40%.
-                  </p>
-                  <div className="flex flex-wrap gap-2 md:justify-end">
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Vue.js</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Python</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Docker</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">PostgreSQL</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline Item 3 - RIGHT SIDE */}
-            <div className="timeline-item relative mb-16 opacity-0 transform translate-y-12">
-              <div className="absolute left-1/2 top-8 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full border-4 border-black z-10 shadow-lg shadow-blue-500/50 hidden md:block"></div>
-
-              {/* Desktop: Right side, Mobile: Full width */}
-              <div className="md:w-1/2 md:ml-auto md:pl-12">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-purple-400 font-semibold text-sm mb-2">2021 - 2022</div>
-                  <h3 className="text-2xl font-bold mb-2 text-white">Frontend Developer</h3>
-                  <div className="text-pink-400 font-semibold mb-4">Digital Agency Pro</div>
-                  <p className="text-gray-300 leading-relaxed mb-4">
-                    Developed responsive web interfaces and improved user experience metrics.
-                    Collaborated with design teams to implement pixel-perfect designs.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">JavaScript</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">CSS3</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Figma</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">Git</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline Item 4 - LEFT SIDE */}
-            <div className="timeline-item relative mb-16 opacity-0 transform translate-y-12">
-              <div className="absolute left-1/2 top-8 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full border-4 border-black z-10 shadow-lg shadow-cyan-500/50 hidden md:block"></div>
-
-              {/* Desktop: Left side, Mobile: Full width */}
-              <div className="md:w-1/2 md:pr-12">
-                <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition-all duration-300 md:text-right">
-                  <div className="text-purple-400 font-semibold text-sm mb-2">2020 - 2021</div>
-                  <h3 className="text-2xl font-bold mb-2 text-white">Junior Web Developer</h3>
-                  <div className="text-pink-400 font-semibold mb-4">WebSolutions Inc</div>
-                  <p className="text-gray-300 leading-relaxed mb-4">
-                    Started my professional journey building websites and learning modern development practices.
-                    Gained experience in both frontend and backend technologies.
-                  </p>
-                  <div className="flex flex-wrap gap-2 md:justify-end">
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">HTML5</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">PHP</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">MySQL</span>
-                    <span className="px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-purple-200 text-sm">WordPress</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Replace the hardcoded timeline with the dynamic Jobs component */}
+          <Jobs onLoadComplete={handleJobsLoaded} />
         </section>
 
-        {/* Skills Section */}
+        {/* Skills Section - unchanged */}
         <section className="my-24">
           <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
             Technical Arsenal
@@ -383,7 +313,7 @@ export default function ResumePage() {
           </div>
         </section>
 
-        {/* Contact Section */}
+        {/* Contact Section - unchanged */}
         <section className="text-center my-24 p-16 bg-gradient-to-r from-purple-600/10 to-pink-600/10 backdrop-blur-sm rounded-3xl border border-purple-500/20" id="contact">
           <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Let's Build Something Amazing
@@ -432,7 +362,7 @@ export default function ResumePage() {
           </div>
         </section>
 
-      <Footer />
+        <Footer />
       </div>
     </div>
   );
