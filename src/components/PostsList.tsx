@@ -12,6 +12,8 @@ interface PostsListProps {
   showMessage: (text: string, type: "success" | "error" | "info") => void;
 }
 
+type Environment = "dev" | "prod";
+
 export default function PostsList({
   showPostsList,
   currentEnv,
@@ -25,6 +27,11 @@ export default function PostsList({
   // Get the correct supabase client based on current environment
   const getCurrentClient = () => {
     return getClientByEnv(currentEnv);
+  };
+
+  // Explicitly type the environment check
+  const isCurrentlyViewingProd = (): boolean => {
+    return currentEnv === "prod";
   };
 
   useEffect(() => {
@@ -62,7 +69,7 @@ export default function PostsList({
   };
 
   const promoteToProduction = async (post: any) => {
-    if (currentEnv === "prod") {
+    if (isCurrentlyViewingProd()) {
       showMessage("❌ Post is already in production.", "error");
       return;
     }
@@ -163,7 +170,7 @@ export default function PostsList({
         showMessage(`🚀 Successfully ${existingPost ? 'updated' : 'created'} post in production!`, "success");
 
         // Refresh the current list if we're viewing prod
-        if (currentEnv === "prod") {
+        if (isCurrentlyViewingProd()) {
           loadExistingPosts();
         }
       }
@@ -238,7 +245,7 @@ export default function PostsList({
         <h2 className="text-xl font-bold text-white">
           📚 Posts in {environments[currentEnv].name}
           <span className="ml-2 text-sm text-gray-400">
-            ({currentEnv === "prod" ? "Production DB" : "Development DB"})
+            ({isCurrentlyViewingProd() ? "Production DB" : "Development DB"})
           </span>
         </h2>
         {deploymentStatus && (
@@ -253,7 +260,7 @@ export default function PostsList({
           <div className="text-4xl mb-2">📝</div>
           <p>No posts yet in {environments[currentEnv].name}</p>
           <p className="text-sm mt-1">
-            {currentEnv === "dev" ?
+            {!isCurrentlyViewingProd() ?
               "Create your first post to get started!" :
               "Promote posts from development to see them here!"}
           </p>
@@ -281,7 +288,7 @@ export default function PostsList({
               </div>
 
               <div className="flex gap-2 ml-4">
-                {currentEnv === "dev" && post.published && (
+                {!isCurrentlyViewingProd() && post.published && (
                   <button
                     onClick={() => promoteToProduction(post)}
                     className="px-3 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-sm text-green-200 transition-all duration-300 whitespace-nowrap"
