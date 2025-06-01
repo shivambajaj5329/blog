@@ -52,16 +52,16 @@ export default function EmailPreview({ post, onClose }: EmailPreviewProps) {
       console.log("🎬 EmailPreview - Template generated successfully");
       setEmailContent({ html, text });
       setIsLoading(false);
-    } catch (error) {
-      console.error("🎬 EmailPreview - Error generating email template:", error);
-      console.error("🎬 EmailPreview - Error details:", {
-        message: error.message,
-        stack: error.stack,
-        post: post,
-        postType: typeof post
-      });
-      setIsLoading(false);
-    }
+} catch (error) {
+  console.error("🎬 EmailPreview - Error generating email template:", error);
+  console.error("🎬 EmailPreview - Error details:", {
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
+    post: post,
+    postType: typeof post
+  });
+  setIsLoading(false);
+}
   }, [post, SITE_URL]);
 
   // Handle escape key to close modal
