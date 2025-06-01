@@ -4,17 +4,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@supabase/supabase-js";
+import { blogSupabase as supabase } from "@/lib/supabase";
 import Newsletter from '@/components/Newsletter';
 import Contact from '@/components/Contact'; // Import the new Contact component
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function BlogHome() {
   const [posts, setPosts] = useState<any[]>([]);

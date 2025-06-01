@@ -4,17 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from 'remark-gfm'; // 👈 ADD THIS IMPORT
 import Newsletter from '@/components/Newsletter';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { blogSupabase as supabase } from "@/lib/supabase";
 
 export default function BlogPostPage() {
   const { slug } = useParams();

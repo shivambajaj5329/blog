@@ -8,13 +8,12 @@ import Footer from '@/components/Footer';
 import Jobs from '@/components/Jobs'; // Import the new Jobs component
 import Contact from '@/components/Contact'; // Import the new Contact component
 import Newsletter from '@/components/Newsletter';
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { blogSupabase as supabase } from "@/lib/supabase";
 
 export default function ResumePage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [jobsLoaded, setJobsLoaded] = useState(false);
   const [showOpportunityBadge, setShowOpportunityBadge] = useState(false);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     // Set loaded state immediately

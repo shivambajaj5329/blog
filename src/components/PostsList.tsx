@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { createClient } from '@supabase/supabase-js';
+import { getClientByEnv, createProdClient } from "@/lib/supabase";
 
 interface PostsListProps {
   showPostsList: boolean;
@@ -20,9 +19,13 @@ export default function PostsList({
   onEditPost,
   showMessage
 }: PostsListProps) {
-  const supabaseClient = useSupabaseClient();
   const [existingPosts, setExistingPosts] = useState<any[]>([]);
   const [deploymentStatus, setDeploymentStatus] = useState("");
+
+  // Get the correct supabase client based on current environment
+  const getCurrentClient = () => {
+    return getClientByEnv(currentEnv);
+  };
 
   useEffect(() => {
     if (showPostsList) {
@@ -31,14 +34,31 @@ export default function PostsList({
   }, [showPostsList, currentEnv]);
 
   const loadExistingPosts = async () => {
-    const { data } = await supabaseClient
-      .from("posts")
-      .select("*")
-      .eq("environment", currentEnv)
-      .order("created_at", { ascending: false })
-      .limit(20);
+    try {
+      const client = getCurrentClient();
 
-    setExistingPosts(data || []);
+      console.log(`🔍 Loading posts from ${currentEnv} database...`);
+
+      const { data, error } = await client
+        .from("posts")
+        .select("*")
+        .eq("published", true) // Only show published posts
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error(`❌ Error loading ${currentEnv} posts:`, error);
+        showMessage(`❌ Failed to load ${currentEnv} posts: ${error.message}`, "error");
+        setExistingPosts([]);
+      } else {
+        console.log(`✅ Loaded ${data?.length || 0} posts from ${currentEnv}`);
+        setExistingPosts(data || []);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to connect to ${currentEnv} database:`, error);
+      showMessage(`❌ Failed to connect to ${currentEnv} database`, "error");
+      setExistingPosts([]);
+    }
   };
 
   const promoteToProduction = async (post: any) => {
@@ -72,14 +92,10 @@ export default function PostsList({
     setDeploymentStatus("Promoting to production...");
 
     try {
-      // Create production client with explicit configuration
-      const prodClient = createClient(prodUrl, prodKey, {
-        auth: {
-          persistSession: false, // Don't persist auth for cross-db operations
-        }
-      });
+      // Create production client using lib function
+      const prodClient = createProdClient();
 
-      console.log('✅ Production client created with URL:', prodUrl);
+      console.log('✅ Production client created');
 
       // Test connection first
       console.log('🔍 Testing production connection...');
@@ -101,7 +117,6 @@ export default function PostsList({
         .from("posts")
         .select("id")
         .eq("slug", post.slug)
-        .eq("environment", "prod")
         .maybeSingle();
 
       if (findError) {
@@ -118,8 +133,8 @@ export default function PostsList({
         tags: post.tags,
         content: post.content,
         image_url: post.image_url,
-        published: post.published,
-        environment: "prod"
+        published: post.published
+        // Remove environment field since we're using separate databases
       };
 
       console.log('📤 Preparing to save post data:', postData);
@@ -146,6 +161,11 @@ export default function PostsList({
       } else {
         console.log('✅ Promotion successful:', result.data);
         showMessage(`🚀 Successfully ${existingPost ? 'updated' : 'created'} post in production!`, "success");
+
+        // Refresh the current list if we're viewing prod
+        if (currentEnv === "prod") {
+          loadExistingPosts();
+        }
       }
     } catch (error) {
       console.error("❌ Promotion error:", error);
@@ -156,41 +176,57 @@ export default function PostsList({
   };
 
   const deletePost = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!confirm(`Are you sure you want to delete "${title}" from ${currentEnv}?`)) return;
 
-    const { error } = await supabaseClient
-      .from("posts")
-      .delete()
-      .eq("id", id);
+    try {
+      const client = getCurrentClient();
 
-    if (error) {
+      const { error } = await client
+        .from("posts")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("❌ Delete error:", error);
+        showMessage(`❌ Failed to delete post: ${error.message}`, "error");
+      } else {
+        showMessage("🗑️ Post deleted successfully.", "success");
+        loadExistingPosts();
+      }
+    } catch (error) {
+      console.error("❌ Delete error:", error);
       showMessage("❌ Failed to delete post.", "error");
-    } else {
-      showMessage("🗑️ Post deleted successfully.", "success");
-      loadExistingPosts();
     }
   };
 
   const duplicatePost = async (post: any) => {
-    const duplicatedPost = {
-      title: `${post.title} (Copy)`,
-      slug: `${post.slug}-copy-${Date.now()}`,
-      tags: post.tags,
-      content: post.content,
-      image_url: post.image_url,
-      published: false,
-      environment: currentEnv
-    };
+    try {
+      const client = getCurrentClient();
 
-    const { error } = await supabaseClient
-      .from("posts")
-      .insert(duplicatedPost);
+      const duplicatedPost = {
+        title: `${post.title} (Copy)`,
+        slug: `${post.slug}-copy-${Date.now()}`,
+        tags: post.tags,
+        content: post.content,
+        image_url: post.image_url,
+        published: false
+        // Remove environment field since we're using separate databases
+      };
 
-    if (error) {
+      const { error } = await client
+        .from("posts")
+        .insert(duplicatedPost);
+
+      if (error) {
+        console.error("❌ Duplicate error:", error);
+        showMessage(`❌ Failed to duplicate post: ${error.message}`, "error");
+      } else {
+        showMessage("📄 Post duplicated successfully!", "success");
+        loadExistingPosts();
+      }
+    } catch (error) {
+      console.error("❌ Duplicate error:", error);
       showMessage("❌ Failed to duplicate post.", "error");
-    } else {
-      showMessage("📄 Post duplicated successfully!", "success");
-      loadExistingPosts();
     }
   };
 
@@ -201,6 +237,9 @@ export default function PostsList({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white">
           📚 Posts in {environments[currentEnv].name}
+          <span className="ml-2 text-sm text-gray-400">
+            ({currentEnv === "prod" ? "Production DB" : "Development DB"})
+          </span>
         </h2>
         {deploymentStatus && (
           <div className="text-blue-400 text-sm animate-pulse">
@@ -213,7 +252,11 @@ export default function PostsList({
         <div className="text-center text-gray-400 py-8">
           <div className="text-4xl mb-2">📝</div>
           <p>No posts yet in {environments[currentEnv].name}</p>
-          <p className="text-sm mt-1">Create your first post to get started!</p>
+          <p className="text-sm mt-1">
+            {currentEnv === "dev" ?
+              "Create your first post to get started!" :
+              "Promote posts from development to see them here!"}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -231,6 +274,9 @@ export default function PostsList({
                       🏷️ {post.tags}
                     </span>
                   )}
+                  <span className="text-purple-400 text-xs">
+                    🗄️ {currentEnv.toUpperCase()}
+                  </span>
                 </div>
               </div>
 

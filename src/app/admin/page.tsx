@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { SessionContextProvider, useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 
 // Import your components
 import LoginComponent from "@/components/LoginComponent";
@@ -13,8 +12,7 @@ import PreviewComponent from "@/components/PreviewComponent";
 import PostsList from "@/components/PostsList";
 import JobsManager from "@/components/JobsManager";
 import OpportunityStatusManager from "@/components/OpportunityStatusManager"; // Import the new component
-
-const supabaseClient = createPagesBrowserClient();
+import { blogSupabase as supabase } from "@/lib/supabase";
 
 // Environment configuration
 const ENVIRONMENTS = {
@@ -30,7 +28,7 @@ const ENVIRONMENTS = {
 
 export default function AdminPageWrapper() {
   return (
-    <SessionContextProvider supabaseClient={supabaseClient}>
+    <SessionContextProvider supabaseClient={supabase}>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
         {/* Global background elements */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
