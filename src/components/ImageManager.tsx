@@ -42,32 +42,53 @@ export default function ImageManager({ showImageManager, onImageInsert, showMess
   };
 
   const handleImageManagerUpload = async () => {
-    if (!imageUploadFile) return;
+  if (!imageUploadFile) {
+    console.log("❌ No file selected");
+    return;
+  }
 
-    setIsUploadingImage(true);
-    try {
-      const fileExt = imageUploadFile.name.split(".").pop();
-      const fileName = `blog-${Date.now()}.${fileExt}`;
+  console.log("📁 File details:", {
+    name: imageUploadFile.name,
+    size: imageUploadFile.size,
+    type: imageUploadFile.type
+  });
 
-      const { error: uploadError } = await supabaseClient.storage
-        .from("blog-images")
-        .upload(fileName, imageUploadFile);
+  // Check if file is too large (Supabase free tier has 50MB limit)
+  if (imageUploadFile.size > 50 * 1024 * 1024) {
+    showMessage("❌ File too large. Maximum size is 50MB.", "error");
+    return;
+  }
 
-      if (uploadError) {
-        showMessage("❌ Failed to upload image.", "error");
-        return;
-      }
+  setIsUploadingImage(true);
+  try {
+    const fileExt = imageUploadFile.name.split(".").pop();
+    const fileName = `blog-${Date.now()}.${fileExt}`;
 
-      showMessage("✅ Image uploaded successfully!", "success");
-      setImageUploadFile(null);
-      loadUploadedImages();
-    } catch (error) {
-      showMessage("❌ Upload failed.", "error");
-    } finally {
-      setIsUploadingImage(false);
+    console.log("🚀 Attempting upload:", fileName);
+
+    const { data, error: uploadError } = await supabaseClient.storage
+      .from("blog-images")
+      .upload(fileName, imageUploadFile);
+
+    console.log("📤 Upload result:", { data, error: uploadError });
+
+    if (uploadError) {
+      console.error("❌ Upload error details:", uploadError);
+      showMessage(`❌ Upload failed: ${uploadError.message}`, "error");
+      return;
     }
-  };
 
+    console.log("✅ Upload successful!");
+    showMessage("✅ Image uploaded successfully!", "success");
+    setImageUploadFile(null);
+    loadUploadedImages();
+  } catch (error) {
+    console.error("❌ Catch block error:", error);
+    showMessage(`❌ Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
+  } finally {
+    setIsUploadingImage(false);
+  }
+};
   const copyImageUrl = (url: string) => {
     navigator.clipboard.writeText(url);
     showMessage("📋 Image URL copied to clipboard!", "success");
