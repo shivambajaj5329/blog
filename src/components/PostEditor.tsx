@@ -107,7 +107,7 @@ export default function PostEditor({
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${slug}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage
-          .from("post-images")
+          .from("blog-images")  // 👈 FIXED: Changed from "post-images" to "blog-images"
           .upload(fileName, imageFile);
 
         if (uploadError) {
@@ -116,7 +116,7 @@ export default function PostEditor({
         }
 
         const { data: urlData } = supabaseClient.storage
-          .from("post-images")
+          .from("blog-images")  // 👈 FIXED: Changed from "post-images" to "blog-images"
           .getPublicUrl(fileName);
 
         imageUrl = urlData?.publicUrl || "";
