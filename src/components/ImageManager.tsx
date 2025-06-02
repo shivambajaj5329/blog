@@ -15,6 +15,7 @@ export default function ImageManager({ showImageManager, onImageInsert, showMess
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadFile, setImageUploadFile] = useState<File | null>(null);
+  const [showResizer, setShowResizer] = useState<string | null>(null); // Track which image's resizer is open
 
   useEffect(() => {
     if (showImageManager) {
@@ -42,56 +43,82 @@ export default function ImageManager({ showImageManager, onImageInsert, showMess
   };
 
   const handleImageManagerUpload = async () => {
-  if (!imageUploadFile) {
-    console.log("❌ No file selected");
-    return;
-  }
-
-  console.log("📁 File details:", {
-    name: imageUploadFile.name,
-    size: imageUploadFile.size,
-    type: imageUploadFile.type
-  });
-
-  // Check if file is too large (Supabase free tier has 50MB limit)
-  if (imageUploadFile.size > 50 * 1024 * 1024) {
-    showMessage("❌ File too large. Maximum size is 50MB.", "error");
-    return;
-  }
-
-  setIsUploadingImage(true);
-  try {
-    const fileExt = imageUploadFile.name.split(".").pop();
-    const fileName = `blog-${Date.now()}.${fileExt}`;
-
-    console.log("🚀 Attempting upload:", fileName);
-
-    const { data, error: uploadError } = await supabaseClient.storage
-      .from("blog-images")
-      .upload(fileName, imageUploadFile);
-
-    console.log("📤 Upload result:", { data, error: uploadError });
-
-    if (uploadError) {
-      console.error("❌ Upload error details:", uploadError);
-      showMessage(`❌ Upload failed: ${uploadError.message}`, "error");
+    if (!imageUploadFile) {
+      console.log("❌ No file selected");
       return;
     }
 
-    console.log("✅ Upload successful!");
-    showMessage("✅ Image uploaded successfully!", "success");
-    setImageUploadFile(null);
-    loadUploadedImages();
-  } catch (error) {
-    console.error("❌ Catch block error:", error);
-    showMessage(`❌ Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
-  } finally {
-    setIsUploadingImage(false);
-  }
-};
+    console.log("📁 File details:", {
+      name: imageUploadFile.name,
+      size: imageUploadFile.size,
+      type: imageUploadFile.type
+    });
+
+    // Check if file is too large (Supabase free tier has 50MB limit)
+    if (imageUploadFile.size > 50 * 1024 * 1024) {
+      showMessage("❌ File too large. Maximum size is 50MB.", "error");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const fileExt = imageUploadFile.name.split(".").pop();
+      const fileName = `blog-${Date.now()}.${fileExt}`;
+
+      console.log("🚀 Attempting upload:", fileName);
+
+      const { data, error: uploadError } = await supabaseClient.storage
+        .from("blog-images")
+        .upload(fileName, imageUploadFile);
+
+      console.log("📤 Upload result:", { data, error: uploadError });
+
+      if (uploadError) {
+        console.error("❌ Upload error details:", uploadError);
+        showMessage(`❌ Upload failed: ${uploadError.message}`, "error");
+        return;
+      }
+
+      console.log("✅ Upload successful!");
+      showMessage("✅ Image uploaded successfully!", "success");
+      setImageUploadFile(null);
+      loadUploadedImages();
+    } catch (error) {
+      console.error("❌ Catch block error:", error);
+      showMessage(`❌ Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const copyImageUrl = (url: string) => {
     navigator.clipboard.writeText(url);
     showMessage("📋 Image URL copied to clipboard!", "success");
+  };
+
+  const insertImageWithSize = (imageUrl: string, size: string) => {
+    let imageMarkdown = "";
+
+    switch (size) {
+      case "small":
+        imageMarkdown = `<img src="${imageUrl}" alt="" style="width: 300px; max-width: 100%; height: auto; margin: 20px auto; display: block; border-radius: 8px;">`;
+        break;
+      case "medium":
+        imageMarkdown = `<img src="${imageUrl}" alt="" style="width: 500px; max-width: 100%; height: auto; margin: 20px auto; display: block; border-radius: 8px;">`;
+        break;
+      case "large":
+        imageMarkdown = `<img src="${imageUrl}" alt="" style="width: 700px; max-width: 100%; height: auto; margin: 20px auto; display: block; border-radius: 8px;">`;
+        break;
+      case "full":
+        imageMarkdown = `![](${imageUrl})`;
+        break;
+      default:
+        imageMarkdown = `![](${imageUrl})`;
+    }
+
+    onImageInsert(imageMarkdown);
+    setShowResizer(null);
+    showMessage(`📷 ${size} image inserted!`, "success");
   };
 
   const deleteImage = async (imageName: string) => {
@@ -150,6 +177,46 @@ export default function ImageManager({ showImageManager, onImageInsert, showMess
             <p className="text-xs text-gray-400 mb-2 truncate" title={image.name}>
               {image.name}
             </p>
+
+            {/* Size Selector */}
+            {showResizer === image.name && (
+              <div className="mb-2 p-2 bg-white/10 rounded border border-white/20">
+                <p className="text-xs text-white mb-2 font-medium">Choose size:</p>
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    onClick={() => insertImageWithSize(image.url, "small")}
+                    className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-xs text-green-200 transition-all duration-300"
+                  >
+                    Small
+                  </button>
+                  <button
+                    onClick={() => insertImageWithSize(image.url, "medium")}
+                    className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-xs text-green-200 transition-all duration-300"
+                  >
+                    Medium
+                  </button>
+                  <button
+                    onClick={() => insertImageWithSize(image.url, "large")}
+                    className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-xs text-green-200 transition-all duration-300"
+                  >
+                    Large
+                  </button>
+                  <button
+                    onClick={() => insertImageWithSize(image.url, "full")}
+                    className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-xs text-green-200 transition-all duration-300"
+                  >
+                    Full
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowResizer(null)}
+                  className="w-full mt-1 px-2 py-1 bg-gray-600/20 hover:bg-gray-600/30 border border-gray-500/30 rounded text-xs text-gray-300 transition-all duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
             <div className="flex gap-1">
               <button
                 onClick={() => copyImageUrl(image.url)}
@@ -159,11 +226,11 @@ export default function ImageManager({ showImageManager, onImageInsert, showMess
                 📋
               </button>
               <button
-                onClick={() => onImageInsert(`![](${image.url})`)}
+                onClick={() => setShowResizer(showResizer === image.name ? null : image.name)}
                 className="flex-1 px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-xs text-green-200 transition-all duration-300"
-                title="Insert into post"
+                title="Insert with size options"
               >
-                ➕
+                📐
               </button>
               <button
                 onClick={() => deleteImage(image.name)}

@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from 'rehype-raw';
+
 import remarkGfm from 'remark-gfm'; // 👈 ADD THIS IMPORT
 import Newsletter from '@/components/Newsletter';
 import Header from '@/components/Header';
@@ -171,6 +173,38 @@ export default function BlogPostPage() {
         {children}
       </td>
     ),
+    // 🖼️ CUSTOM IMAGE COMPONENT FOR BLOG POST PAGE
+    img: ({ src, alt, ...props }: any) => {
+      // Check if it's already styled (from image manager with custom HTML)
+      const hasCustomStyle = props.style || props.className?.includes('width');
+
+      if (hasCustomStyle) {
+        // If it has custom styling, render as regular img to preserve styling
+        return (
+          <img
+            src={src}
+            alt={alt || ""}
+            {...props}
+            className={`${props.className || ""} max-w-full h-auto`}
+          />
+        );
+      }
+
+      // Use Next.js Image for optimization with default sizing
+      return (
+        <div className="my-6 text-center">
+          <Image
+            src={src}
+            alt={alt || ""}
+            width={800}
+            height={400}
+            className="max-w-full h-auto mx-auto rounded-xl border border-white/10"
+            style={{ width: 'auto', height: 'auto' }}
+            unoptimized={!src?.startsWith('/')} // Disable optimization for external URLs
+          />
+        </div>
+      );
+    },
   };
 
   if (loading) {
@@ -328,7 +362,8 @@ export default function BlogPostPage() {
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
               <ReactMarkdown
                 components={customComponents}
-                remarkPlugins={[remarkGfm]} // 👈 ADD THIS LINE
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]} // 👈 ADD THIS LINE
               >
                 {post.content}
               </ReactMarkdown>
