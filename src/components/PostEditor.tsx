@@ -29,6 +29,7 @@ export default function PostEditor({
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [showCoverInPost, setShowCoverInPost] = useState(true); // 👈 NEW: Toggle for showing cover image
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDrafting, setIsDrafting] = useState(false);
 
@@ -50,6 +51,7 @@ export default function PostEditor({
       setSlug(editingPost.slug);
       setTags(editingPost.tags);
       setContent(editingPost.content);
+      setShowCoverInPost(editingPost.show_cover_in_post ?? true); // 👈 NEW: Load toggle state
       if (editingPost.image_url) {
         setImagePreview(editingPost.image_url);
       }
@@ -65,6 +67,7 @@ export default function PostEditor({
     setContent("");
     setImageFile(null);
     setImagePreview("");
+    setShowCoverInPost(true); // 👈 NEW: Reset toggle to default
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +110,7 @@ export default function PostEditor({
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${slug}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage
-          .from("blog-images")  // 👈 FIXED: Changed from "post-images" to "blog-images"
+          .from("blog-images")
           .upload(fileName, imageFile);
 
         if (uploadError) {
@@ -116,7 +119,7 @@ export default function PostEditor({
         }
 
         const { data: urlData } = supabaseClient.storage
-          .from("blog-images")  // 👈 FIXED: Changed from "post-images" to "blog-images"
+          .from("blog-images")
           .getPublicUrl(fileName);
 
         imageUrl = urlData?.publicUrl || "";
@@ -128,6 +131,7 @@ export default function PostEditor({
         tags,
         content,
         image_url: imageUrl || (editingPost?.image_url || ""),
+        show_cover_in_post: showCoverInPost, // 👈 NEW: Save toggle state
         published: !isDraft,
         environment: currentEnv,
       };
@@ -282,6 +286,22 @@ export default function PostEditor({
                 onChange={handleImageUpload}
                 className="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all duration-300"
               />
+            </div>
+          )}
+
+          {/* 👈 NEW: Cover Image Display Toggle */}
+          {(imagePreview || editingPost?.image_url) && (
+            <div className="mt-4 flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+              <input
+                type="checkbox"
+                id="showCoverInPost"
+                checked={showCoverInPost}
+                onChange={(e) => setShowCoverInPost(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <label htmlFor="showCoverInPost" className="text-sm text-gray-300 cursor-pointer">
+                📷 Show cover image in blog post
+              </label>
             </div>
           )}
         </div>

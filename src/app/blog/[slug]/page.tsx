@@ -344,7 +344,7 @@ export default function BlogPostPage() {
             </div>
 
             {/* Featured Image */}
-            {post.image_url && (
+            {post.image_url && post.show_cover_in_post && (
               <div className="mb-12 rounded-2xl overflow-hidden border border-white/10">
                 <Image
                   src={post.image_url}
