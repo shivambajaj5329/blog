@@ -35,7 +35,7 @@ export default function RootLayout({
             if (node.parentElement?.classList.contains('cox-highlight')) {
               return NodeFilter.FILTER_REJECT;
             }
-            if (node.textContent && /Cox Communications/gi.test(node.textContent)) {
+            if (node.textContent && /Cox Communications|Cox/gi.test(node.textContent)) {
               return NodeFilter.FILTER_ACCEPT;
             }
             return NodeFilter.FILTER_REJECT;
@@ -54,11 +54,15 @@ export default function RootLayout({
         const parent = textNode.parentNode;
 
         if (parent) {
-          const parts = text.split(/(Cox Communications)/gi);
+          const parts = text.split(/(Cox Communications|Cox)/gi);
           const fragment = document.createDocumentFragment();
 
           parts.forEach(part => {
-            if (part.toLowerCase() === 'cox communications') {
+            if (part.toLowerCase() === 'cox communications'
+            ||
+            part.toLowerCase() === 'cox'
+
+            ) {
               const span = document.createElement('span');
               span.className = 'cox-highlight';
               span.textContent = part;
