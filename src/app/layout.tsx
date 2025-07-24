@@ -1,12 +1,96 @@
-// Fixed Layout - Sleek Black Theme for All Pages (No styled-jsx)
+// Fixed Layout - Sleek Black Theme with Cox Communications Highlighting
+"use client";
 
 import "./globals.css";
+import { useEffect } from "react";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    // Function to highlight Cox Communications text
+    const highlightCoxText = () => {
+      const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: function(node) {
+            // Skip script and style tags
+            if (node.parentElement?.tagName === 'SCRIPT' ||
+                node.parentElement?.tagName === 'STYLE' ||
+                node.parentElement?.tagName === 'NOSCRIPT') {
+              return NodeFilter.FILTER_REJECT;
+            }
+            // Skip if already highlighted
+            if (node.parentElement?.classList.contains('cox-highlight')) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            // Accept if contains Cox Communications
+            if (node.textContent && /Cox Communications/gi.test(node.textContent)) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
+            return NodeFilter.FILTER_REJECT;
+          }
+        }
+      );
+
+      const nodesToReplace = [];
+      let node;
+      while (node = walker.nextNode()) {
+        nodesToReplace.push(node);
+      }
+
+      // Replace text nodes with highlighted versions
+      nodesToReplace.forEach(textNode => {
+        const text = textNode.textContent || '';
+        const parent = textNode.parentNode;
+
+        if (parent) {
+          const parts = text.split(/(Cox Communications)/gi);
+          const fragment = document.createDocumentFragment();
+
+          parts.forEach(part => {
+            if (part.toLowerCase() === 'cox communications') {
+              const span = document.createElement('span');
+              span.className = 'cox-highlight';
+              span.textContent = part;
+              fragment.appendChild(span);
+            } else {
+              fragment.appendChild(document.createTextNode(part));
+            }
+          });
+
+          parent.replaceChild(fragment, textNode);
+        }
+      });
+    };
+
+    // Initial highlight
+    highlightCoxText();
+
+    // Create observer for dynamic content
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          highlightCoxText();
+        }
+      });
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Cleanup
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -58,6 +142,38 @@ export default function RootLayout({
 
             .bg-zinc-900, .bg-slate-950 {
               background: black !important;
+            }
+
+            /* Cox Communications Highlighting Styles */
+            .cox-highlight {
+              display: inline-block;
+              font-weight: 600;
+              padding: 0 4px;
+              border-radius: 4px;
+              background: linear-gradient(90deg, #009DDC 0%, #00B5E2 30%, #00C8B4 70%, #00D264 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              text-shadow: 0 0 25px rgba(0, 200, 180, 0.4);
+              animation: cox-glow 2s ease-in-out infinite;
+              position: relative;
+              background-size: 100% 100%;
+              background-position: 0% 0%;
+            }
+
+            @keyframes cox-glow {
+              0%, 100% {
+                filter: brightness(1) drop-shadow(0 0 12px rgba(0, 157, 220, 0.4));
+              }
+              50% {
+                filter: brightness(1.2) drop-shadow(0 0 25px rgba(0, 200, 180, 0.6));
+              }
+            }
+
+            /* Ensure Cox highlight works in dark mode */
+            .cox-highlight::selection {
+              background: rgba(0, 200, 180, 0.3);
+              -webkit-text-fill-color: #00B5E2;
             }
 
             .orb-animation-1 {
