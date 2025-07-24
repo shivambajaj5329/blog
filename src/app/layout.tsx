@@ -1,33 +1,40 @@
-// Fixed Layout - Sleek Black Theme with Cox Communications Highlighting
+// Enhanced Layout with Mobile Navigation Fix
 "use client";
 
 import "./globals.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
   useEffect(() => {
-    // Function to highlight Cox Communications text
+    // Close mobile menu on route change
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    // Cox Communications highlighting code
     const highlightCoxText = () => {
       const walker = document.createTreeWalker(
         document.body,
         NodeFilter.SHOW_TEXT,
         {
           acceptNode: function(node) {
-            // Skip script and style tags
             if (node.parentElement?.tagName === 'SCRIPT' ||
                 node.parentElement?.tagName === 'STYLE' ||
                 node.parentElement?.tagName === 'NOSCRIPT') {
               return NodeFilter.FILTER_REJECT;
             }
-            // Skip if already highlighted
             if (node.parentElement?.classList.contains('cox-highlight')) {
               return NodeFilter.FILTER_REJECT;
             }
-            // Accept if contains Cox Communications
             if (node.textContent && /Cox Communications/gi.test(node.textContent)) {
               return NodeFilter.FILTER_ACCEPT;
             }
@@ -42,7 +49,6 @@ export default function RootLayout({
         nodesToReplace.push(node);
       }
 
-      // Replace text nodes with highlighted versions
       nodesToReplace.forEach(textNode => {
         const text = textNode.textContent || '';
         const parent = textNode.parentNode;
@@ -67,10 +73,8 @@ export default function RootLayout({
       });
     };
 
-    // Initial highlight
     highlightCoxText();
 
-    // Create observer for dynamic content
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -79,13 +83,11 @@ export default function RootLayout({
       });
     });
 
-    // Start observing
     observer.observe(document.body, {
       childList: true,
       subtree: true
     });
 
-    // Cleanup
     return () => {
       observer.disconnect();
     };
@@ -170,10 +172,77 @@ export default function RootLayout({
               }
             }
 
-            /* Ensure Cox highlight works in dark mode */
             .cox-highlight::selection {
               background: rgba(0, 200, 180, 0.3);
               -webkit-text-fill-color: #00B5E2;
+            }
+
+            /* Mobile Navigation Styles */
+            .mobile-nav {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              background: rgba(0, 0, 0, 0.95);
+              backdrop-filter: blur(20px);
+              border-top: 1px solid rgba(255, 255, 255, 0.1);
+              z-index: 100;
+              padding: 0.5rem 0;
+            }
+
+            @media (min-width: 768px) {
+              .mobile-nav {
+                display: none;
+              }
+            }
+
+            .mobile-nav-item {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 0.5rem;
+              color: rgba(255, 255, 255, 0.7);
+              text-decoration: none;
+              transition: all 0.3s ease;
+              position: relative;
+            }
+
+            .mobile-nav-item:active {
+              transform: scale(0.95);
+            }
+
+            .mobile-nav-item.active {
+              color: white;
+            }
+
+            .mobile-nav-item.active::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 30px;
+              height: 2px;
+              background: linear-gradient(90deg, #9333ea, #db2777);
+              border-radius: 1px;
+            }
+
+            .mobile-nav-icon {
+              font-size: 1.5rem;
+              margin-bottom: 0.25rem;
+            }
+
+            .mobile-nav-label {
+              font-size: 0.75rem;
+            }
+
+            /* Adjust content padding for mobile nav */
+            @media (max-width: 767px) {
+              body {
+                padding-bottom: 80px;
+              }
             }
 
             .orb-animation-1 {
@@ -207,15 +276,10 @@ export default function RootLayout({
       <body className="bg-black text-white min-h-screen overflow-x-hidden">
         {/* Global Animated Background */}
         <div className="fixed inset-0 pointer-events-none z-0">
-          {/* Main gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-blue-900/20"></div>
-
-          {/* Moving gradient orbs */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl orb-animation-1"></div>
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl orb-animation-2"></div>
           <div className="absolute top-2/3 left-1/3 w-64 h-64 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl orb-animation-3"></div>
-
-          {/* Subtle grid pattern overlay */}
           <div
             className="absolute inset-0 opacity-5"
             style={{
@@ -224,10 +288,32 @@ export default function RootLayout({
           ></div>
         </div>
 
-        {/* Content with proper z-index */}
+        {/* Content */}
         <div className="relative z-10 min-h-screen">
           {children}
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="mobile-nav">
+          <div className="flex">
+            <Link href="/" className={`mobile-nav-item ${pathname === '/' ? 'active' : ''}`}>
+              <span className="mobile-nav-icon">🏠</span>
+              <span className="mobile-nav-label">Home</span>
+            </Link>
+            <Link href="/resume" className={`mobile-nav-item ${pathname === '/resume' ? 'active' : ''}`}>
+              <span className="mobile-nav-icon">📄</span>
+              <span className="mobile-nav-label">Resume</span>
+            </Link>
+            <Link href="/contact" className={`mobile-nav-item ${pathname === '/contact' ? 'active' : ''}`}>
+              <span className="mobile-nav-icon">💬</span>
+              <span className="mobile-nav-label">Contact</span>
+            </Link>
+            <a href="/blog" className={`mobile-nav-item ${pathname?.startsWith('/blog') ? 'active' : ''}`}>
+              <span className="mobile-nav-icon">📝</span>
+              <span className="mobile-nav-label">Blog</span>
+            </a>
+          </div>
+        </nav>
       </body>
     </html>
   );
