@@ -24,18 +24,6 @@ interface MarkdownComponentProps {
   [key: string]: any;
 }
 
-interface ImageProps {
-  src?: string;
-  alt?: string;
-  [key: string]: any;
-}
-
-interface LinkProps {
-  href?: string;
-  children?: React.ReactNode;
-  [key: string]: any;
-}
-
 export default function PreviewComponent({ title, tags, content, imagePreview }: PreviewComponentProps) {
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
@@ -207,9 +195,9 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                   ),
 
                   // ENHANCED LINKS
-                  a: ({ children, href, ...props }: LinkProps) => (
+                  a: ({ children, ...props }: any) => (
                     <a
-                      href={href}
+                      href={props.href}
                       className="text-blue-400 hover:text-blue-300 underline transition-colors duration-300 break-words"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -219,11 +207,11 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                   ),
 
                   // ENHANCED IMAGES
-                  img: ({ src, alt, ...props }: ImageProps) => (
+                  img: (props: any) => (
                     <div className="my-6">
                       <img
-                        src={src}
-                        alt={alt}
+                        src={props.src}
+                        alt={props.alt}
                         className="max-w-full h-auto rounded-lg border border-white/10 mx-auto"
                       />
                     </div>
