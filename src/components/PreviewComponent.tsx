@@ -11,6 +11,19 @@ interface PreviewComponentProps {
   imagePreview: string;
 }
 
+// Define proper types for markdown components
+interface CodeProps {
+  children?: React.ReactNode;
+  className?: string;
+  inline?: boolean;
+  [key: string]: any;
+}
+
+interface MarkdownComponentProps {
+  children?: React.ReactNode;
+  [key: string]: any;
+}
+
 export default function PreviewComponent({ title, tags, content, imagePreview }: PreviewComponentProps) {
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
@@ -27,7 +40,7 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
               <div className="mb-6">
                 <h1 className="text-2xl md:text-3xl font-bold mb-4 leading-tight break-words">
                   {title.split(/(\p{Emoji})/gu).map((part: string, index: number) => {
-                    // If this part is an emoji, render normally with larger size
+                    // If this part is an emoji, render with larger size
                     if (/\p{Emoji}/gu.test(part)) {
                       return <span key={index} className="text-3xl md:text-4xl">{part}</span>;
                     }
@@ -77,65 +90,65 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                 remarkPlugins={[remarkGfm]}
                 components={{
                   // ENHANCED HEADING COMPONENTS
-                  h1: ({ children }) => (
+                  h1: ({ children }: MarkdownComponentProps) => (
                     <h1 className="text-xl md:text-2xl font-bold mt-6 mb-4 text-white border-b border-white/20 pb-2">
                       {children}
                     </h1>
                   ),
-                  h2: ({ children }) => (
+                  h2: ({ children }: MarkdownComponentProps) => (
                     <h2 className="text-lg md:text-xl font-bold mt-5 mb-3 text-blue-200">
                       {children}
                     </h2>
                   ),
-                  h3: ({ children }) => (
+                  h3: ({ children }: MarkdownComponentProps) => (
                     <h3 className="text-base md:text-lg font-bold mt-4 mb-2 text-blue-300">
                       {children}
                     </h3>
                   ),
 
                   // ENHANCED PARAGRAPH STYLING
-                  p: ({ children }) => (
+                  p: ({ children }: MarkdownComponentProps) => (
                     <p className="text-gray-300 mb-4 leading-relaxed text-sm md:text-base">
                       {children}
                     </p>
                   ),
 
                   // ENHANCED TABLE COMPONENTS
-                  table: ({ children }) => (
+                  table: ({ children }: MarkdownComponentProps) => (
                     <div className="overflow-x-auto my-6 rounded-lg border border-white/20">
                       <table className="w-full border-collapse bg-slate-900/80 backdrop-blur-sm min-w-full">
                         {children}
                       </table>
                     </div>
                   ),
-                  thead: ({ children }) => (
+                  thead: ({ children }: MarkdownComponentProps) => (
                     <thead className="bg-gradient-to-r from-blue-600/30 to-purple-600/30">
                       {children}
                     </thead>
                   ),
-                  tbody: ({ children }) => (
+                  tbody: ({ children }: MarkdownComponentProps) => (
                     <tbody className="divide-y divide-white/10">
                       {children}
                     </tbody>
                   ),
-                  tr: ({ children }) => (
+                  tr: ({ children }: MarkdownComponentProps) => (
                     <tr className="hover:bg-white/5 transition-colors duration-200">
                       {children}
                     </tr>
                   ),
-                  th: ({ children }) => (
+                  th: ({ children }: MarkdownComponentProps) => (
                     <th className="px-4 py-3 text-left font-semibold text-white border-b border-white/30 text-sm whitespace-nowrap">
                       {children}
                     </th>
                   ),
-                  td: ({ children }) => (
+                  td: ({ children }: MarkdownComponentProps) => (
                     <td className="px-4 py-3 text-gray-300 border-b border-white/5 text-sm">
                       {children}
                     </td>
                   ),
 
-                  // ENHANCED CODE STYLING
-                  code: ({ children, className, inline }) => {
+                  // FIXED CODE STYLING WITH PROPER TYPES
+                  code: ({ children, className, inline, ...props }: CodeProps) => {
                     const isInline = inline || !className;
 
                     if (isInline) {
@@ -158,31 +171,31 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                   },
 
                   // ENHANCED BLOCKQUOTE
-                  blockquote: ({ children }) => (
+                  blockquote: ({ children }: MarkdownComponentProps) => (
                     <blockquote className="border-l-4 border-blue-500 pl-4 my-4 bg-blue-500/10 py-3 rounded-r-lg italic text-gray-300">
                       {children}
                     </blockquote>
                   ),
 
                   // ENHANCED LISTS
-                  ul: ({ children }) => (
+                  ul: ({ children }: MarkdownComponentProps) => (
                     <ul className="list-disc list-inside mb-4 text-gray-300 space-y-2 ml-4">
                       {children}
                     </ul>
                   ),
-                  ol: ({ children }) => (
+                  ol: ({ children }: MarkdownComponentProps) => (
                     <ol className="list-decimal list-inside mb-4 text-gray-300 space-y-2 ml-4">
                       {children}
                     </ol>
                   ),
-                  li: ({ children }) => (
+                  li: ({ children }: MarkdownComponentProps) => (
                     <li className="mb-1 text-sm md:text-base leading-relaxed">
                       {children}
                     </li>
                   ),
 
                   // ENHANCED LINKS
-                  a: ({ children, href }) => (
+                  a: ({ children, href }: MarkdownComponentProps & { href?: string }) => (
                     <a
                       href={href}
                       className="text-blue-400 hover:text-blue-300 underline transition-colors duration-300 break-words"
@@ -194,7 +207,7 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                   ),
 
                   // ENHANCED IMAGES
-                  img: ({ src, alt }) => (
+                  img: ({ src, alt }: MarkdownComponentProps & { src?: string; alt?: string }) => (
                     <div className="my-6">
                       <img
                         src={src}
@@ -208,12 +221,12 @@ export default function PreviewComponent({ title, tags, content, imagePreview }:
                   hr: () => <hr className="border-gray-600 my-6" />,
 
                   // ENHANCED STRONG AND EM
-                  strong: ({ children }) => (
+                  strong: ({ children }: MarkdownComponentProps) => (
                     <strong className="font-bold text-white">
                       {children}
                     </strong>
                   ),
-                  em: ({ children }) => (
+                  em: ({ children }: MarkdownComponentProps) => (
                     <em className="italic text-blue-200">
                       {children}
                     </em>
