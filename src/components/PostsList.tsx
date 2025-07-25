@@ -259,32 +259,61 @@ export default function PostsList({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {existingPosts.map((post) => (
-            <div key={post.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+            <div key={post.id} className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors gap-4">
+              {/* ENHANCED TITLE SECTION - NO MORE TRUNCATION */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-white truncate">{post.title}</h3>
-                <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
-                  <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                  <span className={`${post.published ? 'text-green-400' : 'text-yellow-400'}`}>
+                <h3 className="text-lg font-semibold text-white leading-tight break-words mb-2">
+                  {/* HANDLE EMOJIS AND TEXT SEPARATELY FOR BETTER DISPLAY */}
+                  {post.title.split(/(\p{Emoji})/gu).map((part: string, index: number) => {
+                    // If this part is an emoji, render with larger size
+                    if (/\p{Emoji}/gu.test(part)) {
+                      return <span key={index} className="text-xl">{part}</span>;
+                    }
+                    // If this part is text, render normally
+                    return part ? (
+                      <span key={index}>{part}</span>
+                    ) : null;
+                  })}
+                </h3>
+
+                {/* ENHANCED META INFO SECTION */}
+                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                  <span className="flex items-center gap-1">
+                    📅 {new Date(post.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+
+                  <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                    post.published
+                      ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                      : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                  }`}>
                     {post.published ? '✅ Published' : '📝 Draft'}
                   </span>
+
                   {post.tags && (
-                    <span className="text-blue-400 truncate">
+                    <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs border border-blue-500/30">
                       🏷️ {post.tags}
                     </span>
                   )}
-                  <span className="text-purple-400 text-xs">
+
+                  <span className="flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs border border-purple-500/30">
                     🗄️ {currentEnv.toUpperCase()}
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-2 ml-4">
+              {/* ENHANCED ACTION BUTTONS */}
+              <div className="flex flex-wrap gap-2 lg:ml-4">
                 {!isCurrentlyViewingProd() && post.published && (
                   <button
                     onClick={() => promoteToProduction(post)}
-                    className="px-3 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded text-sm text-green-200 transition-all duration-300 whitespace-nowrap"
+                    className="px-3 py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-sm text-green-200 transition-all duration-300 whitespace-nowrap font-medium hover:scale-105"
                     title="Promote to production"
                   >
                     🚀 To Prod
@@ -292,31 +321,31 @@ export default function PostsList({
                 )}
                 <button
                   onClick={() => duplicatePost(post)}
-                  className="px-3 py-1 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded text-sm text-purple-200 transition-all duration-300"
+                  className="px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-sm text-purple-200 transition-all duration-300 font-medium hover:scale-105"
                   title="Duplicate post"
                 >
-                  📄
+                  📄 Copy
                 </button>
                 <button
                   onClick={() => onEditPost(post)}
-                  className="px-3 py-1 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 rounded text-sm text-yellow-200 transition-all duration-300"
+                  className="px-3 py-2 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 rounded-lg text-sm text-yellow-200 transition-all duration-300 font-medium hover:scale-105"
                   title="Edit post"
                 >
-                  ✏️
+                  ✏️ Edit
                 </button>
                 <button
                   onClick={() => window.open(`${environments[currentEnv].url}/blog/${post.slug}`, '_blank')}
-                  className="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded text-sm text-blue-200 transition-all duration-300"
+                  className="px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg text-sm text-blue-200 transition-all duration-300 font-medium hover:scale-105"
                   title="View post"
                 >
-                  👁️
+                  👁️ View
                 </button>
                 <button
                   onClick={() => deletePost(post.id, post.title)}
-                  className="px-3 py-1 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded text-sm text-red-200 transition-all duration-300"
+                  className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg text-sm text-red-200 transition-all duration-300 font-medium hover:scale-105"
                   title="Delete post"
                 >
-                  🗑️
+                  🗑️ Delete
                 </button>
               </div>
             </div>
@@ -324,10 +353,10 @@ export default function PostsList({
         </div>
       )}
 
-      <div className="mt-4 text-center">
+      <div className="mt-6 text-center">
         <button
           onClick={loadExistingPosts}
-          className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm text-gray-300 transition-all duration-300"
+          className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm text-gray-300 transition-all duration-300 font-medium hover:scale-105"
         >
           🔄 Refresh Posts
         </button>

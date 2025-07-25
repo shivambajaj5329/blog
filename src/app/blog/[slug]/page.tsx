@@ -6,8 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from 'rehype-raw';
-
-import remarkGfm from 'remark-gfm'; // 👈 ADD THIS IMPORT
+import remarkGfm from 'remark-gfm';
 import Newsletter from '@/components/Newsletter';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -105,30 +104,56 @@ export default function BlogPostPage() {
         {children}
       </blockquote>
     ),
-    code: ({ children, className }: any) => {
-      const isInline = !className;
+    // FIXED CODE BLOCK STYLING
+    code: ({ children, className, inline, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const isInline = inline || !match;
+
       if (isInline) {
         return (
-          <code className="bg-slate-800 px-2 py-1 rounded text-purple-300 text-sm">
+          <code className="bg-slate-800 px-2 py-1 rounded text-purple-300 text-sm font-mono">
             {children}
           </code>
         );
       }
+
       return (
-        <code className="block bg-slate-800 p-4 rounded-lg overflow-x-auto border border-white/10">
+        <div className="relative my-6">
+          {match && (
+            <div className="absolute top-0 right-0 bg-slate-700 text-gray-300 text-xs px-3 py-1 rounded-bl-lg rounded-tr-lg">
+              {match[1]}
+            </div>
+          )}
+          <pre className="bg-slate-900 border border-slate-700 rounded-lg overflow-x-auto p-4 text-sm">
+            <code className="text-gray-100 font-mono whitespace-pre">
+              {children}
+            </code>
+          </pre>
+        </div>
+      );
+    },
+    // FIXED PRE STYLING
+    pre: ({ children }: any) => {
+      return (
+        <div className="my-6">
           {children}
-        </code>
+        </div>
       );
     },
     ul: ({ children }: any) => (
-      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-4">
+      <ul className="list-disc list-inside space-y-2 text-gray-300 mb-4 ml-4">
         {children}
       </ul>
     ),
     ol: ({ children }: any) => (
-      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-4">
+      <ol className="list-decimal list-inside space-y-2 text-gray-300 mb-4 ml-4">
         {children}
       </ol>
+    ),
+    li: ({ children }: any) => (
+      <li className="text-gray-300 leading-relaxed">
+        {children}
+      </li>
     ),
     a: ({ href, children }: any) => (
       <a
@@ -205,6 +230,18 @@ export default function BlogPostPage() {
         </div>
       );
     },
+    // ENHANCED STRONG/BOLD STYLING
+    strong: ({ children }: any) => (
+      <strong className="font-bold text-white">
+        {children}
+      </strong>
+    ),
+    // ENHANCED EM/ITALIC STYLING
+    em: ({ children }: any) => (
+      <em className="italic text-purple-200">
+        {children}
+      </em>
+    ),
   };
 
   if (loading) {
@@ -357,13 +394,13 @@ export default function BlogPostPage() {
             )}
           </header>
 
-          {/* Article Body - 👈 UPDATED WITH GFM PLUGIN */}
+          {/* Article Body - UPDATED WITH BETTER PROSE STYLING */}
           <div className="prose prose-lg prose-invert max-w-none">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
               <ReactMarkdown
                 components={customComponents}
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]} // 👈 ADD THIS LINE
+                rehypePlugins={[rehypeRaw]}
               >
                 {post.content}
               </ReactMarkdown>
