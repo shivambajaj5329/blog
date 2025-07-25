@@ -293,7 +293,7 @@ export default function BlogHome() {
               className="hero-animate hero-subtitle text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
               style={{ opacity: pageReady ? 0 : 1 }}
             >
-              building stuff, breaking stuff, learning stuff
+              i churn bad ideas hoping one sticks
             </p>
 
             {/* CTA Buttons */}
